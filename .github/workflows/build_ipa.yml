@@ -17,10 +17,18 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Install Dependencies
+      - name: Fix iOS Deployment Target in Podfile
         run: |
-          flutter pub get
-          cd ios && pod install
+          cd ios
+          sed -i '' "s/# platform :ios, '.*'/platform :ios, '15.0'/g" Podfile || true
+          sed -i '' "s/platform :ios, '.*'/platform :ios, '15.0'/g" Podfile || true
+          if ! grep -q "platform :ios" Podfile; then
+            echo "platform :ios, '15.0'" | cat - Podfile > temp && mv temp Podfile
+          fi
+          cd ..
+
+      - name: Install Dependencies
+        run: flutter pub get
 
       - name: Build iOS Release (Unsigned)
         run: |
